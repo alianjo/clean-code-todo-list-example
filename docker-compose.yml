@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"  # Map host port 27017 to container port 27017
+    volumes:
+      - mongo-data:/data/db  # Persist data across container restarts
+    environment:
+      MONGO_INITDB_DATABASE: todo  # Initialize the "todo" database
+
+  # Go application service
+  app:
+    build:
+      context: .  # Build from the current directory (uses Dockerfile)
+      dockerfile: Dockerfile
+    container_name: todo-api
+    ports:
+      - "8080:8080"  # Map host port 8080 to container port 8080
+    depends_on:
+      - mongo  # Wait for MongoDB to be ready
+    environment:
+      - MONGO_URI=mongodb://mongo:27017  # Connection string to MongoDB container
+    command: ["./todo-api"]  # Ensure the app runs
+
+volumes:
+  mongo-data:
